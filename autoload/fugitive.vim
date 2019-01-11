@@ -3926,6 +3926,21 @@ function! s:Browse(bang,line1,count,...) abort
       endwhile
     endif
 
+    if type ==# 'commit' && a:count && getline('.') =~# '^[ +-]' && search('^@@ -\d\+\%(,\d\+\)\= +\d\+','bnW')
+      let sigil = getline('.')[0] ==# '-' ? '-' : '+'
+      let lnum = line('.') - 1
+      let offset = 0
+      while getline(lnum) !~# '^@@ -\d\+\%(,\d\+\)\= +\d\+'
+        if getline(lnum) =~# '^[ '.sigil.']'
+          let offset += 1
+        endif
+        let lnum -= 1
+      endwhile
+      let offset += matchstr(getline(lnum), sigil.'\zs\d\+')
+      let path = getline(search('^\(+++\|---\) [abciow12]/','bnW'))[6:-1]
+      let line1 = sigil ==# '-' ? -offset : offset
+    endif
+
     if empty(remote)
       let remote = '.'
     endif
