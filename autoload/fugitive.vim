@@ -5317,6 +5317,12 @@ function! s:BrowseCommand(line1, line2, range, count, bang, mods, reg, arg, args
           \ 'line1': line1,
           \ 'line2': line2}
 
+
+    if type ==# 'commit' && a:count
+      let opts.start = s:DiffPosition(line1)
+      let opts.end = s:DiffPosition(line2)
+    endif
+
     let url = ''
     for Handler in get(g:, 'fugitive_browse_handlers', [])
       let url = call(Handler, [copy(opts)])
@@ -5349,6 +5355,26 @@ function! s:BrowseCommand(line1, line2, range, count, bang, mods, reg, arg, args
     endif
   catch /^fugitive:/
     return 'echoerr ' . string(v:exception)
+  endtry
+endfunction
+
+function! s:DiffPosition(line) abort
+  try
+    let offsets = {' ':0,'+':0,'-':0}
+    let offsets[getline(a:line)[0]] -= 0 " throw if on hunk header
+    let lnum = a:line - 1
+    while getline(lnum) !~# '^@@ -\d\+\%(,\d\+\)\= +\d\+'
+      let offsets[getline(lnum)[0]] += 1
+      let lnum -= 1
+    endwhile
+    let pattern = ' \(\/dev\/null\|[abciow12]\/\)\zs.*'
+    return {
+          \ 'oldpath': matchstr(getline(search('^---'.pattern,'bnW')), '^---'.pattern),
+          \ 'newpath': matchstr(getline(search('^+++'.pattern,'bnW')), '^+++'.pattern),
+          \ 'oldline': offsets['-'] + offsets[' '] + matchstr(getline(lnum), '-\zs\d\+'),
+          \ 'newline': offsets['+'] + offsets[' '] + matchstr(getline(lnum), '+\zs\d\+'),
+          \ 'cursor': getline(a:line)[0]}
+  catch /^Vim\%((\a\+)\)\=:E734/
   endtry
 endfunction
 
