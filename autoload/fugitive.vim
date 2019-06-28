@@ -2278,15 +2278,18 @@ function! s:Do(action, visual) abort
     if status < 0
       execute record.lnum + 1
     endif
-    let success = 1
   catch /^fugitive:/
     return 'echoerr v:errmsg'
   finally
     if reload
+      let pos = line('.') - line('w0')
       execute s:ReloadStatus()
-    endif
-    if exists('success')
-      call s:StageReveal()
+      while line('.') - line('w0') > pos && line('w0') < line('w$')
+        execute "normal! \<C-E>"
+      endwhile
+      while line('.') - line('w0') < pos && line('w0') > 1
+        execute "normal! \<C-Y>"
+      endwhile
     endif
   endtry
   return ''
