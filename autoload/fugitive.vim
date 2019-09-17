@@ -5671,7 +5671,11 @@ function! s:StatusCfile(...) abort
       return [':0:' . info.relative[0], info.offset, 'normal!zv']
     endif
   elseif len(info.paths)
-    return [lead . info.relative[0]]
+    if info.sub =~# '^S'
+      return [FugitiveExtractGitDir(lead . info.relative[0]) . '/index']
+    else
+      return [lead . info.relative[0]]
+    endif
   elseif len(info.commit)
     return [info.commit]
   elseif line =~# '^\%(Head\|Merge\|Rebase\|Upstream\|Pull\|Push\): '
