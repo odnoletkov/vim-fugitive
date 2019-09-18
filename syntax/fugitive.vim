@@ -18,7 +18,7 @@ syn match fugitivePreposition /\<\%([io]nto\|from\|to\|Rebasing\%( detached\)\=\
 syn match fugitiveInstruction /^\l\l\+\>/ contained containedin=@fugitiveSection nextgroup=fugitiveHash skipwhite
 syn match fugitiveDone /^done\>/ contained containedin=@fugitiveSection nextgroup=fugitiveHash skipwhite
 syn match fugitiveStop /^stop\>/ contained containedin=@fugitiveSection nextgroup=fugitiveHash skipwhite
-syn match fugitiveModifier /^[MADRCU?]\{1,2} / contained containedin=@fugitiveSection
+syn match fugitiveModifier /^[MADRCU?m]\{1,2} / contained containedin=@fugitiveSection
 syn match fugitiveSymbolicRef /\.\@!\%(\.\.\@!\|[^[:space:][:cntrl:]\:.]\)\+\.\@<!/ contained
 syn match fugitiveHash /^\x\{4,\}\>/ contained containedin=@fugitiveSection
 syn match fugitiveHash /\<\x\{4,\}\>/ contained
@@ -27,7 +27,7 @@ syn region fugitiveHunk start=/^\%(@@\+ -\)\@=/ end=/^\%([A-Za-z?@]\|$\)\@=/ con
 
 for s:section in ['Untracked', 'Unstaged', 'Staged']
   exe 'syn region fugitive' . s:section . 'Section start=/^\%(' . s:section . ' .*(\d\+)$\)\@=/ contains=fugitive' . s:section . 'Heading end=/^$/'
-  exe 'syn match fugitive' . s:section . 'Modifier /^[MADRCU?] / contained containedin=fugitive' . s:section . 'Section'
+  exe 'syn match fugitive' . s:section . 'Modifier /^[MADRCU?m] / contained containedin=fugitive' . s:section . 'Section'
   exe 'syn cluster fugitiveSection add=fugitive' . s:section . 'Section'
   exe 'syn match fugitive' . s:section . 'Heading /^[A-Z][a-z][^:]*\ze (\d\+)$/ contains=fugitivePreposition contained nextgroup=fugitiveCount skipwhite'
 endfor

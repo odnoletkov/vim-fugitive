@@ -1659,7 +1659,7 @@ function! fugitive#BufReadStatus() abort
             call add(staged, {'type': 'File', 'status': line[2], 'filename': file, 'sub': sub})
           endif
           if line[3] !=# '.'
-            call add(unstaged, {'type': 'File', 'status': get({'C':'M','M':'?','U':'?'}, matchstr(sub, 'S\.*\zs[CMU]'), line[3]), 'filename': file, 'sub': sub})
+            call add(unstaged, {'type': 'File', 'status': get({'C':'M','M':'m','U':'?'}, matchstr(sub, 'S\.*\zs[CMU]'), line[3]), 'filename': file, 'sub': sub})
           endif
         endif
         let i += 1
@@ -1872,7 +1872,7 @@ function! fugitive#BufReadStatus() abort
 
     for [lnum, section] in [[staged_end, 'Staged'], [unstaged_end, 'Unstaged']]
       while len(getline(lnum))
-        let filename = matchstr(getline(lnum), '^[A-Z?] \zs.*')
+        let filename = matchstr(getline(lnum), '^[A-Zm?] \zs.*')
         if has_key(expanded[section], filename)
           call s:StageInline('show', lnum)
         endif
@@ -2307,7 +2307,7 @@ function! s:StageSeek(info, fallback) abort
   endif
   let i = 0
   while len(getline(line))
-    let filename = matchstr(getline(line), '^[A-Z?] \zs.*')
+    let filename = matchstr(getline(line), '^[A-Zm?] \zs.*')
     if len(filename) &&
           \ ((info.filename[-1:-1] ==# '/' && filename[0 : len(info.filename) - 1] ==# info.filename) ||
           \ (filename[-1:-1] ==# '/' && filename ==# info.filename[0 : len(filename) - 1]) ||
@@ -2521,7 +2521,7 @@ function! s:StageInfo(...) abort
       let index += 1
     endif
   endwhile
-  let text = matchstr(getline(lnum), '^[A-Z?] \zs.*')
+  let text = matchstr(getline(lnum), '^[A-Zm?] \zs.*')
   return {'section': section,
         \ 'heading': getline(slnum),
         \ 'sigil': sigil,
@@ -2530,7 +2530,7 @@ function! s:StageInfo(...) abort
         \ 'relative': reverse(split(text, ' -> ')),
         \ 'paths': map(reverse(split(text, ' -> ')), 's:Tree() . "/" . v:val'),
         \ 'commit': matchstr(getline(lnum), '^\%(\%(\x\x\x\)\@!\l\+\s\+\)\=\zs[0-9a-f]\{4,\}\ze '),
-        \ 'status': matchstr(getline(lnum), '^[A-Z?]\ze \|^\%(\x\x\x\)\@!\l\+\ze [0-9a-f]'),
+        \ 'status': matchstr(getline(lnum), '^[A-Zm?]\ze \|^\%(\x\x\x\)\@!\l\+\ze [0-9a-f]'),
         \ 'sub': get(get(get(b:fugitive_files, section, {}), text, {}), 'sub', ''),
         \ 'index': index}
 endfunction
@@ -2599,14 +2599,14 @@ function! s:Selection(arg1, ...) abort
         let results[-1].patch = lnum
       endif
       let results[-1].lnum = lnum
-    elseif line =~# '^[A-Z?] '
-      let filename = matchstr(line, '^[A-Z?] \zs.*')
+    elseif line =~# '^[A-Zm?] '
+      let filename = matchstr(line, '^[A-Zm?] \zs.*')
       call add(results, extend(deepcopy(template), {
             \ 'lnum': lnum,
             \ 'filename': filename,
             \ 'relative': reverse(split(filename, ' -> ')),
             \ 'paths': map(reverse(split(filename, ' -> ')), 'root . v:val'),
-            \ 'status': matchstr(line, '^[A-Z?]'),
+            \ 'status': matchstr(line, '^[A-Zm?]'),
             \ }))
     elseif line =~# '^\x\x\x\+ '
       call add(results, extend({
@@ -2727,7 +2727,7 @@ function! s:StageReveal() abort
   endif
 endfunction
 
-let s:file_pattern = '^[A-Z?] .\|^diff --'
+let s:file_pattern = '^[A-Zm?] .\|^diff --'
 let s:file_commit_pattern = s:file_pattern . '\|^\%(\l\{3,\} \)\=[0-9a-f]\{4,\} '
 let s:item_pattern = s:file_commit_pattern . '\|^@@'
 
